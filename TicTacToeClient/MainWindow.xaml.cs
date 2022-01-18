@@ -20,6 +20,8 @@ using System.Windows.Shapes;
 using AForge;
 using AForge.Video;
 using AForge.Video.DirectShow;
+using TicTacToeClient.Helpers;
+
 namespace TicTacToeClient
 {
     /// <summary>
@@ -100,6 +102,11 @@ namespace TicTacToeClient
             ClientSocket.Send(buffer, 0, buffer.Length, SocketFlags.None);
         }
 
+        private void SendImage(byte[] src)
+        {
+            ClientSocket.Send(src, 0, src.Length, SocketFlags.None);
+        }
+
         private void ReceiveResponse()
         {
             var buffer = new byte[2048];
@@ -142,23 +149,31 @@ namespace TicTacToeClient
                 });
             });
         }
-
+        public static byte[] imgToByteConverter(System.Windows.Controls.Image inImg)
+        {
+            ImageConverter imgCon = new ImageConverter();
+            return (byte[])imgCon.ConvertTo(inImg, typeof(byte[]));
+        }
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
             Task.Run(() =>
             {
-               //
                 _videoDevices.Stop();
+                App.Current.Dispatcher.Invoke(() =>
+                {
+                    SendImage(ImageBytes);
+                });
+
             });
         }
         FilterInfoCollection _captureDevice;
         VideoCaptureDevice _videoDevices;
         private void getAllCameraList()
         {
-             _captureDevice = new FilterInfoCollection(FilterCategory.VideoInputDevice);
+            _captureDevice = new FilterInfoCollection(FilterCategory.VideoInputDevice);
             try
             {
-                 _videoDevices = new VideoCaptureDevice(_captureDevice[0].MonikerString);
+                _videoDevices = new VideoCaptureDevice(_captureDevice[0].MonikerString);
                 _videoDevices.NewFrame += _videoDevices_NewFrame;
                 _videoDevices.Start();
             }
@@ -167,14 +182,19 @@ namespace TicTacToeClient
                 MessageBox.Show(e.Message);
             }
         }
-
+        public  byte[] ImageToByte(System.Drawing.Image img)
+        {
+            ImageConverter converter = new ImageConverter();
+            return (byte[])converter.ConvertTo(img, typeof(byte[]));
+        }
+        public byte[] ImageBytes { get; set; }
         private void _videoDevices_NewFrame(object sender, NewFrameEventArgs eventArgs)
         {
             App.Current.Dispatcher.Invoke(() =>
             {
                 var _source = (Bitmap)eventArgs.Frame.Clone();
                 img.Source = ImageSourceFromBitmap(_source);
-             
+                ImageBytes = ImageToByte(_source);
             });
         }
         [DllImport("gdi32.dll", EntryPoint = "DeleteObject")]
