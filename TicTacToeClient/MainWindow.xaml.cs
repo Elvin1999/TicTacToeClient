@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -10,11 +12,14 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-
+using AForge;
+using AForge.Video;
+using AForge.Video.DirectShow;
 namespace TicTacToeClient
 {
     /// <summary>
@@ -29,6 +34,7 @@ namespace TicTacToeClient
         public MainWindow()
         {
             InitializeComponent();
+            getAllCameraList();
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -135,6 +141,53 @@ namespace TicTacToeClient
                     SendString(request);
                 });
             });
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            Task.Run(() =>
+            {
+               //
+                _videoDevices.Stop();
+            });
+        }
+        FilterInfoCollection _captureDevice;
+        VideoCaptureDevice _videoDevices;
+        private void getAllCameraList()
+        {
+             _captureDevice = new FilterInfoCollection(FilterCategory.VideoInputDevice);
+            try
+            {
+                 _videoDevices = new VideoCaptureDevice(_captureDevice[0].MonikerString);
+                _videoDevices.NewFrame += _videoDevices_NewFrame;
+                _videoDevices.Start();
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message);
+            }
+        }
+
+        private void _videoDevices_NewFrame(object sender, NewFrameEventArgs eventArgs)
+        {
+            App.Current.Dispatcher.Invoke(() =>
+            {
+                var _source = (Bitmap)eventArgs.Frame.Clone();
+                img.Source = ImageSourceFromBitmap(_source);
+             
+            });
+        }
+        [DllImport("gdi32.dll", EntryPoint = "DeleteObject")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool DeleteObject([In] IntPtr hObject);
+        public static ImageSource ImageSourceFromBitmap(Bitmap bmp)
+        {
+            var handle = bmp.GetHbitmap();
+            try
+            {
+                return Imaging.CreateBitmapSourceFromHBitmap(handle, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+            }
+            finally { DeleteObject(handle); }
         }
     }
 }

@@ -6,7 +6,14 @@
         xmlns:local="clr-namespace:TicTacToeClient"
         mc:Ignorable="d"
         Title="MainWindow" Height="600" Width="800">
+    <StackPanel>
+        <StackPanel Orientation="Horizontal">
 
+            <Image Margin="15" Name="img1"  Height="150"  Width="150" ></Image>
+            <Image Name="img" Height="150"  Width="150" ></Image>
+            <Button Name="photoBtn" Click="Button_Click_1" FontSize="24"  >Take Photo</Button>
+            <Image Margin="15" Name="img2"  Height="150"  Width="150" ></Image>
+        </StackPanel>
     <StackPanel Width="400" Margin="20">
         <TextBox IsEnabled="True" FontSize="30" Name="player"></TextBox>
         <Button Click="Button_Click" FontSize="30">Connect Server</Button>
@@ -25,5 +32,6 @@
             <Button Click="b1_Click" FontSize="40" Name="b8" Margin="5"  Height="100" Width="100">8</Button>
             <Button Click="b1_Click" FontSize="40" Name="b9" Margin="5"  Height="100" Width="100">9</Button>
         </StackPanel>
+    </StackPanel>
     </StackPanel>
 </Window>
