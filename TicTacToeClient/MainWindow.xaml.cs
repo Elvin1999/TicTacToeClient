@@ -54,7 +54,7 @@ namespace TicTacToeClient
                 {
                     attempts++;
                     // Change IPAddress.Loopback to a remote IP to connect to a remote host.
-                    ClientSocket.Connect(IPAddress.Loopback, PORT);
+                    ClientSocket.Connect("10.1.18.39", PORT);
                 }
                 catch (SocketException)
                 {
